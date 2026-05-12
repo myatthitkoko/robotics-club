@@ -1,18 +1,22 @@
 #include <IRremote.h>
 
 int RECV_PIN = 3;
-
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 
-// motor right
+unsigned long timeStamp = 0;
+unsigned long timeElapsed = 0;
+unsigned long value = 0;
+unsigned long cmd = 0;
+
+// motor right | A
 #define CW_A 13
 #define CCW_A 12
 #define ENABLE_A 11
 
-// motor left
-#define CW_B 8
-#define CCW_B 7
+// motor left | B
+#define CW_B 7
+#define CCW_B 8
 #define ENABLE_B 6
 
 void initializeMotorA() {
@@ -27,18 +31,37 @@ void initializeMotorB() {
   pinMode(CCW_B, OUTPUT);
 }
 
+void initializeLED() {
+  pinMode(4, OUTPUT);
+  pinMode(2, OUTPUT);
+}
+
 void setup() {
   Serial.begin(9600);
-
   irrecv.enableIRIn();
 
   initializeMotorA();
   initializeMotorB();
+  initializeLED();
 }
 
 void stopMotors() {
   analogWrite(ENABLE_A, 0);
   analogWrite(ENABLE_B, 0);
+}
+
+void turnClockwise(int motor) {
+  switch (motor) {
+    case 1:
+      digitalWrite(CW_A, HIGH);
+      digitalWrite(CCW_A, LOW);
+      break;
+
+    case 2:
+      digitalWrite(CW_B, HIGH);
+      digitalWrite(CCW_B, LOW);
+      break;
+  }
 }
 
 void turnCounterClockwise(int motor) {
@@ -71,27 +94,81 @@ void loop() {
 
   if (irrecv.decode(&results)) {
 
-    Serial.println(results.value, HEX);
+    value = results.value;
 
-    switch(results.value) {
-
-      case 0xFF906F:
-        Serial.println("Motor 1");
-        turnCounterClockwise(1);
-        updateMotor(1, 255);
-        break;
-
-      case 0xFFE01F:
-        Serial.println("Motor 2");
-        turnCounterClockwise(2);
-        updateMotor(2, 255);
-        break;
-
-      default:
-        stopMotors();
-        break;
+    if (value != 0xFFFFFFFF) {
+      cmd = value;
     }
 
+    timeStamp = millis();
+    Serial.print("time last updated: ");
+    Serial.println(millis());
+
     irrecv.resume();
+  }
+
+  timeElapsed = millis() - timeStamp;
+  if (timeElapsed < 200) {
+
+    if (cmd == 0xFF906F) {
+
+      Serial.println(" -> ______________________________ ->");
+      Serial.println("   |                              |");
+      Serial.println("   |______________________________|");
+      Serial.println(" ->                                ->");
+
+      turnCounterClockwise(1);
+      turnCounterClockwise(2);
+      updateMotor(1, 255);
+      updateMotor(2, 255);
+      digitalWrite(4, HIGH);
+    }
+//1 FF30CF
+//2 FF18E7
+    else if (cmd == 0xFFE01F) {
+
+      Serial.println(" <- ______________________________ <-");
+      Serial.println("   |                              |");
+      Serial.println("   |______________________________|");
+      Serial.println(" <-                                <-");
+
+      turnClockwise(2);
+      turnClockwise(1);
+      updateMotor(1, 255);
+      updateMotor(2, 255);
+      digitalWrite(2, HIGH);
+    }
+    
+    else if (cmd == 0xFF30CF) {
+
+      Serial.println("Motor 1 | Left");
+      Serial.println(" -> ______________________________ none");
+      Serial.println("   |                              |");
+      Serial.println("   |______________________________|");
+      Serial.println(" ->                                none");
+
+      turnCounterClockwise(1);
+      updateMotor(1, 255);
+
+    }
+
+    else if (cmd == 0xFF18E7) {
+
+      Serial.println("Motor 2 | Right");
+      Serial.println("none______________________________ ->");
+      Serial.println("   |                              |");
+      Serial.println("   |______________________________|");
+      Serial.println("none                                ->");
+
+      turnCounterClockwise(2);
+      updateMotor(2, 255);
+      digitalWrite(4, HIGH);
+    }
+
+  } else {
+
+    stopMotors();
+    digitalWrite(4, LOW);
+    digitalWrite(2, LOW);
   }
 }
