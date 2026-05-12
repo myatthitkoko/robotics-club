@@ -123,8 +123,7 @@ void loop() {
       updateMotor(2, 255);
       digitalWrite(4, HIGH);
     }
-//1 FF30CF
-//2 FF18E7
+      
     else if (cmd == 0xFFE01F) {
 
       Serial.println(" <- ______________________________ <-");
@@ -141,7 +140,6 @@ void loop() {
     
     else if (cmd == 0xFF30CF) {
 
-      Serial.println("Motor 1 | Left");
       Serial.println(" -> ______________________________ none");
       Serial.println("   |                              |");
       Serial.println("   |______________________________|");
@@ -154,7 +152,6 @@ void loop() {
 
     else if (cmd == 0xFF18E7) {
 
-      Serial.println("Motor 2 | Right");
       Serial.println("none______________________________ ->");
       Serial.println("   |                              |");
       Serial.println("   |______________________________|");
