@@ -170,7 +170,7 @@ void loop() {
 
       stopMotors();
       turnCounterClockwise(1);
-      turnCounterCLockwise(3);
+      turnCounterClockwise(3);
     }
 
     else if (cmd == 0xFF18E7) { //turn left
@@ -182,7 +182,7 @@ void loop() {
 
       stopMotors();
       turnCounterClockwise(2);
-      turnCounterCLockwise(4);
+      turnCounterClockwise(4);
     }
 
   } else {
